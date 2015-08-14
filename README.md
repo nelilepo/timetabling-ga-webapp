@@ -1,0 +1,2 @@
+# timetabling-ga-webapp
+Web application that is solving the timetabling problem using genetic algorithm. It executes an instance of the problem (as a separate process from an executable file) and stores the logs and results in MongoDB. The results can later be queried. The front-end is developed with Polymer, and the back-end - with node.js. There is an option for collecting statistics to be visualized with Google Chart web components.
