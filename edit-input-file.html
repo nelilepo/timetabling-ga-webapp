@@ -1,0 +1,230 @@
+<link rel="import" href="./bower_components/core-icons/core-icons.html">
+<link rel="import" href="./bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="./bower_components/paper-button/paper-button.html">
+<link rel="import" href="./bower_components/fin-hypergrid_repo/polymer/html/fin-hypergrid.html">
+<link rel="import" href="./bower_components/hot-table/src/hot-table.html">
+<link rel="import" href="./edit-items-dialog.html">
+
+<polymer-element name="edit-input-file" attributes="currentSelected data">
+    <template>
+        <style>
+
+         #transition-button {
+             transition: all 300ms ease-in-out;
+         }
+
+         #main {
+             padding: 0 0 40px 0;
+         }
+
+         #footer {
+             height: 40px;
+         }
+
+         .grid-title {
+             color: #006064;
+             display: flex;
+             /* justify-content: center; */ /* align horizontal */
+             align-items: center; /* align vertical */
+         }
+
+         .grid {
+             margin: 20px 40 10 40;
+         }
+
+         paper-button {
+             color: #F50057;
+             text-transform: none;
+             margin: 0px 0 0 20;
+         }
+
+         core-icon-button {
+             color: #F50057;
+         }
+
+         #back-title {
+             color: #444;
+             display: flex;
+             /* justify-content: center; */ /* align horizontal */
+             align-items: center; /* align vertical */
+         }
+
+         :host core-header-panel {
+             position: initial;
+         }
+
+         :host::shadow core-toolbar {
+             /* height: 144px; */
+             /* height: 80px; */
+             /* background-color: #FAFAFA; */
+             background-color: white;
+             color: #006064;
+             font-size: 100%;
+         }
+
+        </style>
+
+        <core-header-panel flex>
+            <core-toolbar mode="standard">
+                <div id="back-title" horizontal layout>
+                    <core-icon-button icon="arrow-back" on-click="{{switchPages}}"></core-icon-button>
+                    <div><span>Back to Input options</span></div>
+                </div>
+            </core-toolbar>
+
+            <div id="main" vertical layout>
+                <edit-items-dialog id="editRoomFeatHeaders" data="{{roomFeaturesHeaders}}"></edit-items-dialog>
+                <edit-items-dialog id="editRoomFeatRows" data="{{roomFeaturesData}}" prop="room"></edit-items-dialog>
+
+                <edit-items-dialog id="editStudentEventsHeaders" data="{{studentEventsHeadersNames}}"></edit-items-dialog>
+                <edit-items-dialog id="editStudentEventsRows" data="{{studentEventsData}}" prop="student"></edit-items-dialog>
+
+                <edit-items-dialog id="editEventFeaturesHeaders" data="{{eventFeaturesHeadersNames}}"></edit-items-dialog>
+                <edit-items-dialog id="editEventFeaturesRows" data="{{eventFeaturesData}}" prop="feature"></edit-items-dialog>
+
+                <div class="grid" vertical layout>
+                    <div horizontal layout>
+                        <div class="grid-title" flex>Room-Features matrix</div>
+                        <paper-button on-click="{{openDialog}}" dialog-id="editRoomFeatHeaders">
+                            <core-icon icon="create"></core-icon>
+                            Edit room names
+                        </paper-button>
+                        <paper-button on-click="{{openDialog}}" dialog-id="editRoomFeatRows">
+                            <core-icon icon="create"></core-icon>
+                            Edit feature names
+                        </paper-button>
+                    </div>
+
+                    <hot-table id="roomFeatures" datarows="{{roomFeaturesData}}" colHeaders="{{roomFeaturesHeaders}}" contextMenu="true" maxRows="{{roomFeaturesData.length}}">
+                    </hot-table>
+                </div>
+
+                <div id="fin1" class="grid" vertical layout>
+                    <div horizontal layout>
+                        <div class="grid-title" flex>Student-Events matrix</div>
+                        <paper-button on-click="{{openDialog}}" dialog-id="editStudentEventsHeaders">
+                            <core-icon icon="create"></core-icon>
+                            Edit event names
+                        </paper-button>
+                        <paper-button on-click="{{openDialog}}" dialog-id="editStudentEventsRows">
+                            <core-icon icon="create"></core-icon>
+                            Edit student names
+                        </paper-button>
+                    </div>
+
+                    <div horizontal layout>
+                        <fin-hypergrid id="studentEvents" style="position:relative;width:100%;height:40%;margin: 10 10 10 10px;">
+                            <fin-hypergrid-behavior-json></fin-hypergrid-behavior-json>
+                        </fin-hypergrid>
+                    </div>
+                </div>
+
+                <div id="fin2" class="grid" vertical layout>
+                    <div horizontal layout>
+                        <div class="grid-title" flex>Feature-Events matrix</div>
+                        <paper-button on-click="{{openDialog}}" dialog-id="editEventFeaturesHeaders">
+                            <core-icon icon="create"></core-icon>
+                            Edit feature names
+                        </paper-button>
+                        <paper-button on-click="{{openDialog}}" dialog-id="editEventFeaturesRows">
+                            <core-icon icon="create"></core-icon>
+                            Edit student names
+                        </paper-button>
+                    </div>
+
+                    <div horizontal layout>
+                        <fin-hypergrid id="eventFeatures" style="position:relative;width:100%;height:130px;margin: 10 10 10 10px;">
+                            <fin-hypergrid-behavior-json></fin-hypergrid-behavior-json>
+                        </fin-hypergrid>
+                    </div>
+                </div>
+
+                <div id="footer"></div>
+            </div>
+
+        </core-header-panel>
+
+    </template>
+
+    <script>
+     Polymer('edit-input-file', {
+
+         studentEventsHeadersNames: [],
+         studentEventsHeaders: [],
+         studentEventsData: [],
+
+         eventFeaturesHeadersNames: [],
+         eventFeaturesHeaders: [],
+         eventFeaturesData: [],
+
+         roomFeaturesHeaders: [],
+         roomFeaturesData: [],
+
+         switchPages: function() {
+             console.log("Switched form Edit Input File");
+             this.currentSelected = this.currentSelected === 0 ? 1 : 0;
+             console.log(this.currentSelected);
+         },
+
+         setData: function(data) {
+             var studentEventsBehavior = this.$.studentEvents.getBehavior();
+             this.setGridData(data.student_events, this.studentEventsData, this.studentEventsHeaders, this.studentEventsHeadersNames, studentEventsBehavior);
+
+             var eventFeaturesBehavior = this.$.eventFeatures.getBehavior();
+             this.setGridData(data.feature_events, this.eventFeaturesData, this.eventFeaturesHeaders, this.eventFeaturesHeadersNames, eventFeaturesBehavior);
+
+             this.roomFeaturesData = data.room_features;
+             for (var ev in this.roomFeaturesData[0]) {
+                 if (this.roomFeaturesData[0].hasOwnProperty(ev)) {
+                     this.roomFeaturesHeaders.push(ev);
+                 }
+             }
+
+             console.log(this.eventFeaturesData);
+             console.log(this.studentEventsHeaders);
+
+         },
+
+         setGridData: function(data, gridData, gridHeaders, gridHeadersNames, behavior) {
+             for(var i = 0; i < data.length; i++) {
+                 gridData.push(data[i]);
+             }
+             for (var ev in gridData[0]) {
+                 if (gridData[0].hasOwnProperty(ev)) {
+                     gridHeaders.push(ev);
+                     gridHeadersNames.push(ev);
+                 }
+             }
+
+             console.log(gridData);
+             behavior.setData(gridData);
+             behavior.setHeaders(gridHeadersNames);
+             behavior.setFields(gridHeaders);
+             behavior.setFixedColumnCount(1);
+             //lets override the cell editors, and configure the drop down lists
+             behavior.getCellEditorAt = function(x, y) {
+                 var cellEditor;
+                 if (x === 0) {
+                     cellEditor = this.grid.cellEditors['textfield'];
+                 } else {
+                     cellEditor = this.grid.cellEditors['choice'];
+                     cellEditor.items = [0, 1];
+                 }
+
+                 return cellEditor;
+             };
+
+             behavior.toggleSort = function(columnIndex, incrementIt) {
+                 //do nothing
+             };
+         },
+
+         openDialog: function(event, detail, sender) {
+             var element = event.target.attributes['dialog-id'].value;
+             this.$[element].setTitle(sender.innerText);
+             this.$[element].toggle();
+         },
+
+     });
+    </script>
+</polymer-element>

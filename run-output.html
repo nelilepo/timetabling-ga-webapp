@@ -1,0 +1,59 @@
+<link rel="import" href="./bower_components/socket-connection/socket-connection.html">
+<link rel="import" href="./edit-items-dialog.html">
+<link rel="import" href="./timetable-grid.html">
+
+<polymer-element name="run-output">
+
+    <template>
+        <style>
+         #main {
+             overflow: auto;
+             height: 100%;
+         }
+
+         #table {
+             padding: 40 40px 40 40;
+         }
+
+        </style>
+
+        <div id="main">
+            <socket-connection url="http://localhost:3210/solution">
+                <socket-receiver id="solutionsMsgs" event="solution" data="{{solutions}}">
+                </socket-receiver>
+            </socket-connection>
+
+            <socket-connection url="http://localhost:3210">
+                <socket-receiver id="disconnectMsg" event="disconnect" data="{{smth}}">
+                </socket-receiver>
+            </socket-connection>
+
+            <div id="table">
+                <timetable-grid id="timetable" flex></timetable-grid>
+            </div>
+        </div>
+
+    </template>
+
+    <script>
+     Polymer('run-output', {
+         solutions: [],
+
+         ready: function() {
+             var that = this;
+             this.$.disconnectMsg.addEventListener('received-data', function(){
+                 console.log('disconnected fired');
+                 console.log(that.solutions);
+                 var minBestSolution = that.solutions[0];
+                 for (var i = 1; i < that.solutions.length; i++) {
+                     if (minBestSolution["totalBest"] > that.solutions[i]["totalBest"]) {
+                         minBestSolution = that.solutions[i];
+                     }
+                 }
+                 that.$.timetable.createTable(minBestSolution["rooms"], minBestSolution["timeslots"]);
+             });
+         }
+
+     });
+    </script>
+</polymer-element>

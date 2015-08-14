@@ -1,0 +1,8 @@
+{
+    "tt_exec_file": "",
+    "parallel_utility": "",
+    "input_files_location": "",
+    "mongo_dbpath": "mongodb://localhost/timetabling",
+    "tcp_port": 9998,
+    "app_port": 3210
+}

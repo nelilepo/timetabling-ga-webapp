@@ -1,0 +1,165 @@
+<link rel="import" href="./bower_components/core-header-panel/core-header-panel.html">
+<link rel="import" href="./bower_components/core-toolbar/core-toolbar.html">
+<link rel="import" href="./bower_components/paper-tabs/paper-tabs.html">
+<link rel="import" href="./bower_components/paper-tabs/paper-tab.html">
+<link rel="import" href="./bower_components/core-animated-pages/core-animated-pages.html">
+<link rel="import" href="./bower_components/core-animated-pages/transitions/slide-from-right.html">
+<link rel="import" href="./bower_components/paper-button/paper-button.html">
+<link rel="import" href="./bower_components/core-ajax/core-xhr.html">
+<link rel="import" href="./bower_components/socket-connection/socket-connection.html">
+<link rel="import" href="./input-options.html">
+<link rel="import" href="./edit-input-file.html">
+<link rel="import" href="./run-logs.html">
+<link rel="import" href="./run-output.html">
+
+<polymer-element name="run-instance" attributes="data">
+    <template>
+        <style>
+         :host::shadow core-toolbar {
+             height: 48px;
+             font-size: 100%;
+             background-color: #FAFAFA;
+         }
+
+         core-toolbar::shadow .toolbar-tools {
+             height: 48px;
+             padding: 0px 0 0 0;
+         }
+
+         core-toolbar::shadow ::content > * {
+             margin: 0px 0 0 0;
+         }
+
+         core-header-panel {
+             position: initial;
+         }
+
+         paper-tabs {
+             color: #006064;
+             background-color: #E0F7FA;
+             margin: 0px;
+             width: 100%;
+         }
+
+         paper-tabs::content {
+             margin: 0px;
+         }
+
+         ::content paper-tabs > * {
+             margin: 0px 0 0 0;
+         }
+
+         paper-tabs::shadow #selectionBar {
+             background-color: #F50057;
+         }
+
+         paper-tab::shadow #ink{
+             color: #FF4081;
+         }
+
+         paper-button {
+             color: #F50057
+         }
+
+         core-animated-pages {
+             width: 100%;
+             height: 100%;
+             -webkit-user-select: none;
+         }
+
+         core-header-panel::shadow #mainContainer {
+             overflow-y: hidden;
+         }
+
+         #footer {
+             height: 40px;
+         }
+        </style>
+
+        <core-header-panel mode="waterfall">
+            <core-toolbar>
+                <paper-tabs selected="{{selectedTab}}">
+                    <paper-tab>INPUT</paper-tab>
+                    <paper-tab>LOGS</paper-tab>
+                    <paper-tab>OUTPUT</paper-tab>
+                </paper-tabs>
+            </core-toolbar>
+
+            <div id="main">
+                <socket-connection url="http://localhost:3210">
+                    <socket-emitter id="emitter" event="execute">
+                    </socket-emitter>
+                </socket-connection>
+
+                <socket-connection url="http://localhost:3210">
+                    <socket-receiver id="disconnectMsg" event="disconnect" data="{{smth}}">
+                    </socket-receiver>
+                </socket-connection>
+
+                <core-xhr id="requestInputFile"></core-xhr>
+
+                <core-animated-pages selected="{{selectedTab}}" transitions="slide-from-right">
+
+                    <core-animated-pages selected="{{currentSelected}}" transitions="slide-from-right">
+                        <input-options id="inputOptions" currentSelected="{{currentSelected}}" selectedTab="{{selectedTab}}" cross-fade slide-up></input-options>
+
+                        <edit-input-file id="editInputFile" currentSelected="{{currentSelected}}" data="{{data}}" cross-fade slide-up></edit-input-file>
+
+                    </core-animated-pages>
+
+                    <run-logs id="runLogs"></run-logs>
+
+                    <run-output id="runOutput"></run-output>
+
+                </core-animated-pages>
+
+                <div id="footer"></div>
+            </div>
+
+        </core-header-panel>
+
+    </template>
+    <script>
+     Polymer('run-instance', {
+
+         currentSelected: 0,
+         data: [],
+         selectedTab: 0,
+
+         created: function() {
+             this.logs = [];
+         },
+
+         ready: function() {
+             var that = this;
+             this.$.inputOptions.addEventListener('input-file-data', function() {
+                 that.$.requestInputFile.request({url: '/api/file', method: 'GET',
+                                                  params: {fileName: this.inputFile},
+                                                  callback: function(response, err) {
+                                                      console.log(err);
+                                                      that.data = JSON.parse(response);
+                                                      console.log(that.data);
+                                                      that.setEditData(that.data);
+                                                  }});
+             });
+
+             this.$.disconnectMsg.addEventListener('received-data', function() {
+                 console.log('disconnected fired');
+                 that.selectedTab = 2;
+             });
+         },
+
+         setEditData: function(data) {
+             this.$.editInputFile.setData(this.data);
+         },
+
+         execute: function(e) {
+             this.$.emitter.emit();
+             //TODO: Confirm
+             this.selectedTab = 1;
+         },
+
+     });
+    </script>
+
+</polymer-element>

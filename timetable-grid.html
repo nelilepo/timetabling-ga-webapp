@@ -1,0 +1,130 @@
+<link rel="import" href="./bower_components/paper-button/paper-button.html">
+<link rel="import" href="./bower_components/core-icons/core-icons.html">
+<link rel="import" href="./edit-items-dialog.html">
+
+<polymer-element name="timetable-grid">
+
+    <template>
+        <style>
+         .weekday {
+             font-size: 110%;
+             color: #006064;
+             margin: 3px;
+         }
+
+         .timeslot {
+             margin: 3px;
+             padding: 3px;
+             background-color: white;
+             border-style: solid;
+             border-width: 1px;
+             border-color: #006064;
+             color: #006064;
+         }
+
+         input[type=text] {
+             font-size: medium;
+         }
+
+         .event {
+             margin: 3px;
+             padding: 3px;
+             background-color: white;
+             border-style: solid;
+             border-width: 1px;
+             border-color: #dedede;
+             color: #444;
+         }
+
+         :host::shadow paper-input-decorator {
+             padding: 0px;
+         }
+
+         paper-button {
+             color: #006064;
+             text-transform: none;
+             margin: 0px 20 0 20;
+         }
+
+         .tableButton {
+             margin: 0px;
+         }
+
+         .tableButton::shadow .button-content {
+             padding: 0px;
+         }
+
+         .editButton {
+             margin: 0 0 0 20px;
+         }
+        </style>
+
+        <edit-items-dialog id="editEventsNames" data="{{events}}"></edit-items-dialog>
+        <edit-items-dialog id="editRoomsNames" data="{{rooms}}"></edit-items-dialog>
+
+        <div horizontal layout>
+            <div flex>
+                <paper-button class="tableButton" on-click="{{downloadFile}}">
+                    <core-icon icon="file-download"><a download="timetable.txt" id="downloadLink"></a></core-icon>
+                    Download the table as JSON file
+                </paper-button>
+            </div>
+
+            <paper-button class="tableButton editButton" on-click="{{openDialog}}" dialog-id="editEventsNames">
+                <core-icon icon="create"></core-icon>
+                Edit event names
+            </paper-button>
+            <paper-button class="tableButton editButton" on-click="{{openDialog}}" dialog-id="editRoomsNames">
+                <core-icon icon="create"></core-icon>
+                Edit room names
+            </paper-button>
+        </div>
+
+        <template repeat="{{valuei, i in weekdays}}">
+            <div class="weekday">{{valuei}}</div>
+            <div horizontal layout>
+                <template repeat="{{valuej, j in timeslots}}">
+                    <div vertical layout>
+                        <input class="timeslot" type="text" value="{{valuej}}"></input>
+                        <template repeat="{{e in timeslotEvents[i*9+j]}}">
+                            <span class="event">r: {{rooms[e.room]}} ; ev: {{events[e.event]}}</span>
+                        </template>
+                    </div>
+                </template>
+            </div>
+            <hr >
+        </template>
+
+    </template>
+
+    <script>
+     Polymer('timetable-grid', {
+         rooms: [],
+         events: [],
+
+         created: function() {
+             this.timeslotEvents = [];
+             this.weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+             this.timeslots = ['7:00-8:45', '9:00-10:45', '11:00-12:45', '13:15-15:00', '15:15-17:00', '17:15-19:00', '19:15-21:00' ,'21:15-23:00', '23:15-1:00'];
+         },
+
+         createTable: function(rooms, timeslots) {
+             for(var i = 0; i < 45; i++) {
+                 this.timeslotEvents[i] = [];
+             }
+             this.rooms = [];
+             this.events = [];
+             for(var j = 0; j < rooms.length; j++) {
+                 var room = rooms[j];
+                 var timeslot = timeslots[j];
+                 var ev = '' + j;
+                 this.rooms[room] = '' + room;
+                 this.events.push(ev);
+                 var event = {"room" : room, "event" : j};
+                 this.timeslotEvents[timeslot].push(event);
+             }
+         }
+
+     });
+    </script>
+</polymer-element>

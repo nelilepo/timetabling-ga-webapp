@@ -1,0 +1,457 @@
+<link rel="import" href="./bower_components/google-chart/google-chart.html">
+<link rel="import" href="./bower_components/core-ajax/core-xhr.html">
+<link rel="import" href="./bower_components/ajax-form/ajax-form.html">
+<link rel="import" href="./bower_components/ajax-promise/ajax-promise.html">
+<link rel="import" href="./bower_components/paper-button/paper-button.html">
+<link rel="import" href="./bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="./bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+
+<polymer-element name="collect-statistics" attributes="inputFiles">
+    <template>
+        <style>
+         #main {
+             background-color: #FAFAFA;
+         }
+
+         .heading {
+             color: #006064;
+             font-size: 110%;
+             margin: 20px 20 10 20;
+         }
+
+         .menu-item {
+             margin: 0 10px 0 10;
+         }
+
+         .menu-subItem {
+             margin: 0px 0 0 20;
+         }
+
+         .menu-title {
+             font-size: 130%;
+             color: #006064;
+         }
+
+         .menu-heading {
+             color: #006064;
+             margin: 10px 0 10 20;
+         }
+
+         .submit-button {
+             margin: 30px;
+         }
+
+         .select-item-div {
+             margin: -8px 0 0 0;
+         }
+
+         .subItem-label {
+             color: #444;
+             padding: 3px 0 3 0;
+             margin: 0px 10 0 0;
+         }
+
+         paper-dropdown-menu {
+             margin: 0px;
+         }
+
+         paper-item::shadow .button-content {
+             padding: 5px;
+             color: #444;
+         }
+
+         .checkbox-item {
+             margin: 5px 10 5 20;
+         }
+
+         .checkbox-label {
+             color: #444;
+             padding: 3px 0 3 0;
+             margin: 0px 5 0 5;
+         }
+
+         paper-checkbox::shadow #ink[checked] {
+             color: #006064;
+         }
+
+         paper-checkbox::shadow #checkbox.checked {
+             background-color: #006064;
+             border-color: #006064;
+         }
+
+         paper-checkbox::shadow #ink {
+             color: #006064;
+         }
+
+         paper-checkbox::shadow #checkbox {
+             border-color: #006064;
+         }
+
+         paper-button {
+             color: #006064;
+             text-transform: none;
+             margin: 0px 20 0 20;
+         }
+
+         .menu-text {
+             color: #444;
+             display: flex;
+             align-items: center; /* align vertical */
+         }
+
+         .text-item {
+             color: #444;
+         }
+
+         #searchItemsBox {
+             overflow: auto;
+             background-color: white;
+             border-style: solid;
+             border-width: 1px;
+             border-color: #EEEEEE;
+             height: 80px;
+             margin: 10px 40 0 40;
+         }
+
+         .collect-items {
+             margin: 50px;
+         }
+
+         google-chart {
+             height: 600px;
+             width: 800px;
+         }
+        </style>
+
+        <div id="main">
+            <div class="heading">Collect Statistics options</div>
+
+            <div id="statsTypes" vertical layout class="menu-item">
+                <div class="menu-heading">Statistics type</div>
+                <div class="menu-subItem" horizontal layout>
+                    <div auto-vertical class="checkbox-item">
+                        <core-label horizontal layout>
+                            <paper-checkbox id="qualityChckbx"></paper-checkbox>
+                            <div class="checkbox-label">quality of the timetable solution</div>
+                        </core-label>
+                    </div>
+
+                    <div auto-vertical>
+                        <core-label horizontal layout class="checkbox-item">
+                            <paper-checkbox id="timeChckbx"></paper-checkbox>
+                            <div class="checkbox-label">time elapsed</div>
+                        </core-label>
+                    </div>
+
+                    <div auto-vertical>
+                        <core-label horizontal layout class="checkbox-item">
+                            <paper-checkbox id="speedupChckbx"></paper-checkbox>
+                            <div class="checkbox-label">speedup (only for parallel execution)</div>
+                        </core-label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="menu-item" horizontal layout>
+                <div class="menu-heading">Number of runs (the default is 10)</div>
+                <div class="menu-subItem">
+                    <paper-dropdown-menu id="numRuns" auto-vertical label="select number of runs">
+                        <paper-dropdown id="dropDownItems" class="dropdown">
+                            <core-menu class="menu">
+                                <template repeat="{{i in [5, 10, 15, 20]}}">
+                                    <paper-item>{{i}}</paper-item>
+                                </template>
+                            </core-menu>
+                        </paper-dropdown>
+                    </paper-dropdown-menu>
+                </div>
+            </div>
+
+            <div auto-vertical class="menu-item">
+                <div class="menu-heading">Parallel execution</div>
+
+                <div class="menu-subItem" horizontal layout>
+                    <div horizontal layout class="checkbox-item">
+                        <div class="subItem-label">Number of processors</div>
+                        <div class="select-item-div">
+                            <paper-dropdown-menu id="procsNum" auto-vertical label="processors">
+                                <paper-dropdown id="dropDownItems" class="dropdown">
+                                    <core-menu class="menu">
+                                        <template repeat="{{i in [1,2,3,4,5,6,7,8]}}">
+                                            <paper-item>{{i}}</paper-item>
+                                        </template>
+                                    </core-menu>
+                                </paper-dropdown>
+                            </paper-dropdown-menu>
+                        </div>
+                    </div>
+
+                    <div horizontal layout class="checkbox-item">
+                        <div class="subItem-label">Number of threads per processor</div>
+                        <div class="select-item-div">
+                            <paper-dropdown-menu id="threadsNum" auto-vertical label="threads">
+                                <paper-dropdown id="dropDownItems" class="dropdown">
+                                    <core-menu class="menu">
+                                        <template repeat="{{i in [1,2]}}">
+                                            <paper-item>{{i}}</paper-item>
+                                        </template>
+                                    </core-menu>
+                                </paper-dropdown>
+                            </paper-dropdown-menu>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="menu-subItem" horizontal layout>
+                    <paper-button raised on-click="{{addSearch}}">Add</paper-button>
+                    <div class="menu-text">Add a combination of number of processors-threads</div>
+                </div>
+                <div id="searchItemsBox" class="menu-subItem">
+                    <ul>
+                        <template repeat="{{search in searchItems}}">
+                            <li><span class="text-item">processes: {{search.procsNum}}, threads: {{search.threadsNum}}</span></li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="heading">Algorithm options</div>
+
+            <div class="menu-item" horizontal layout style="margin -10px 0 0 0;">
+                <div class="menu-heading">Input file</div>
+                <div class="menu-subItem">
+                    <paper-dropdown-menu id="criteria" auto-vertical label="select a file">
+                        <core-xhr id="statsType"></core-xhr>
+                        <paper-dropdown id="dropDownItems" class="dropdown">
+                            <core-menu class="menu">
+                                <template repeat="{{file in inputFiles}}">
+                                    <paper-item>{{file}}</paper-item>
+                                </template>
+                            </core-menu>
+                        </paper-dropdown>
+                    </paper-dropdown-menu>
+                </div>
+            </div>
+
+            <div id="LS_options" vertical layout class="menu-item">
+                <div class="menu-heading">Local search neighbourhood move types</div>
+                <div class="menu-subItem" horizontal layout>
+                    <div auto-vertical class="checkbox-item">
+                        <core-label horizontal layout>
+                            <paper-checkbox checked disabled></paper-checkbox>
+                            <div class="checkbox-label">p1 - move an event in the next timeslot</div>
+                        </core-label>
+                    </div>
+
+                    <div auto-vertical>
+                        <core-label horizontal layout class="checkbox-item">
+                            <paper-checkbox></paper-checkbox>
+                            <div class="checkbox-label">p2 - swap an event with the next one</div>
+                        </core-label>
+                    </div>
+
+                    <div auto-vertical>
+                        <core-label horizontal layout class="checkbox-item">
+                            <paper-checkbox></paper-checkbox>
+                            <div class="checkbox-label">p3 - swap three consequent events</div>
+                        </core-label>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <template repeat="{{search, i in searchItems}}">
+                    <core-xhr id="xhr{{i}}"></core-xhr>
+                </template>
+            </div>
+
+            <div class="submit-button">
+                <paper-button raised on-click="{{collect}}">Collect statistics</paper-button>
+            </div>
+
+            <div class="collect-items">
+                <google-chart id="bestChart"></google-chart>
+            </div>
+
+            <div class="collect-items">
+                <google-chart id="timeChart"></google-chart>
+            </div>
+
+            <div class="collect-items">
+                <google-chart id="speedupChart"></google-chart>
+            </div>
+        </div>
+    </template>
+
+    <script>
+     Polymer('collect-statistics', {
+         searchItems: [],
+         procsNum: 1,
+         threadsNum: 1,
+         bestEnabled: false,
+         timeEnabled: false,
+         speedupEnabled: false,
+
+         created: function() {
+             this.searchItems= [];
+             this.bestCols=[{"label":"Quality", "type":"string"}];
+             this.timeCols=[{"label":"Time", "type":"string"}];
+             this.speedupCols=[{"label":"Speedup", "type":"string"}];
+             this.count = 10;
+             this.runs = [];
+             this.bestRows = [];
+             this.timeRows = [];
+             this.speedupRows = [];
+             this.best_k = 0;
+             this.time_k = 0;
+             this.speedup_k = 0;
+             this.speedupRows.push([]);
+             this.speedupRows[0][0] = 'speedup';
+             this.collapseElementsIds = [];
+             this.timeslotEvents = [];
+         },
+
+         ready: function() {
+             var that = this;
+             this.$.qualityChckbx.addEventListener('change', function(event) {
+                 that.bestEnabled = that.$.qualityChckbx.checked;
+             });
+             this.$.timeChckbx.addEventListener('change', function(event) {
+                 that.timeEnabled = that.$.timeChckbx.checked;
+             });
+             this.$.speedupChckbx.addEventListener('change', function(event) {
+                 that.speedupEnabled = that.$.speedupChckbx.checked;
+             });
+             this.$.procsNum.addEventListener('core-select', function(event) {
+                 that.procsNum = event.detail.item.innerText;
+             });
+             this.$.threadsNum.addEventListener('core-select', function(event) {
+                 that.threadsNum = event.detail.item.innerText;
+             });
+             this.$.numRuns.addEventListener('core-select', function(event) {
+                 that.count = event.detail.item.innerText;
+             });
+
+             this.$.bestChart.options = {"title": "Quality of the timetable solution"};
+             this.$.timeChart.options = {"title": "Time elapsed"};
+             this.$.speedupChart.options = {"title": "Speedup"};
+             this.$.bestChart.addEventListener('redraw-best', function(e) {
+                 that.best_k++;
+                 if (that.best_k === that.searchItems.length) {
+                     that.$.bestChart.cols = that.bestCols;
+                     that.$.bestChart.rows = e.detail.rows;
+                     that.best_k = 0;
+                 }
+             });
+             this.$.timeChart.addEventListener('redraw-time', function(e) {
+                 that.time_k++;
+                 if (that.time_k === that.searchItems.length) {
+                     that.$.timeChart.cols = that.timeCols;
+                     that.$.timeChart.rows = e.detail.rows;
+                     that.time_k = 0;
+                 }
+             });
+             this.$.speedupChart.addEventListener('redraw-speedup', function(e) {
+                 that.speedup_k++;
+                 if (that.speedup_k === that.searchItems.length) {
+                     if (that.speedupEnabled) {
+                         that.$.speedupChart.cols = that.speedupCols;
+                         that.$.speedupChart.rows = e.detail.rows;
+                     }
+                     that.speedup_k = 0;
+                 }
+             });
+         },
+
+         addSearch: function() {
+             var search = new Object();
+             search.procsNum = this.procsNum;
+             search.threadsNum = this.threadsNum;
+             this.searchItems.push(search);
+             this.runs.push([]);
+         },
+
+         setRows: function(rows) {
+             this.$.bestChart.rows = rows;
+         },
+
+         collect: function() {
+             for (var i = 0; i < this.count; i++) {
+                 this.bestRows.push([]);
+                 this.bestRows[i][0] = 'quality - try' + (i + 1);
+                 this.timeRows.push([]);
+                 this.timeRows[i][0] = 'time(s) - try' + (i + 1);
+             }
+
+             for (var i = 0; i < this.searchItems.length; i++) {
+                 var colLabel = 'procsNum: ' + this.searchItems[i].procsNum + ', threadsNum: ' + this.searchItems[i].threadsNum;
+                 var col = {"label":colLabel, "type":"number"};
+                 if (this.bestEnabled) {
+                     this.bestCols.push(col);
+                 }
+                 if (this.timeEnabled) {
+                     this.timeCols.push(col);
+                 }
+                 if (this.speedupEnabled) {
+                     this.speedupCols.push(col);
+                 }
+
+                 for (var j = 0; j < this.count; j++) {
+                     this.bestRows[j].push(undefined);
+                     this.timeRows[j].push(undefined);
+                 }
+                 this.speedupRows[0].push(undefined);
+             }
+
+             for (var i = 0; i < this.searchItems.length; i++) {
+                 var xhrElementId = '#xhr' + i;
+                 xhrElement = this.shadowRoot.querySelector(xhrElementId);
+                 var temp = xhrElement.request({url: '/api/runs', params: this.searchItems[i], callback: this.onXhrComplete.bind(xhrElement)});
+             }
+         },
+
+         onXhrComplete: function(response, err) {
+             var position = parseInt(this.id.replace('xhr',''));
+             var that = this.parentElement.offsetParent;
+             that.runs[position] = JSON.parse(response);
+             var tempSpeedupSum = 0;
+             var tempS = 0;
+             var singleCoreTime = 152; //TODO: get average value from DB
+             for (var i = 0; i < that.count; i++) {
+                 if (that.runs[position][i] != undefined) {
+                     if (that.bestEnabled) {
+                         var rowElement = that.runs[position][i].totalBest;
+                         that.bestRows[i][position+1] = rowElement;
+                     }
+                     if (that.timeEnabled) {
+                         var rowElement = that.runs[position][i].totalTime;
+                         that.timeRows[i][position+1] = rowElement;
+                     }
+                     if (that.speedupEnabled) {
+                         tempS++;
+                         tempSpeedupSum = tempSpeedupSum + that.runs[position][i].totalTime;
+                         that.speedupRows[0][position+1] = singleCoreTime / (tempSpeedupSum / tempS);
+                     }
+                 } else {
+                     if (that.bestEnabled) {
+                         that.bestRows[i][position+1] = 0;
+                     }
+                     if (that.timeEnabled) {
+                         that.timeRows[i][position+1] = 0;
+                     }
+                 }
+             }
+
+             if (that.bestEnabled) {
+                 that.$.bestChart.fire('redraw-best', {rows: that.bestRows});
+             }
+             if (that.timeEnabled) {
+                 that.$.timeChart.fire('redraw-time', {rows: that.timeRows});
+             }
+             if (that.speedupEnabled) {
+                 that.$.speedupChart.fire('redraw-speedup', {rows: that.speedupRows});
+             }
+         }
+     });
+    </script>
+</polymer-element>

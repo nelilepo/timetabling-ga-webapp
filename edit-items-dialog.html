@@ -1,0 +1,117 @@
+<link rel="import" href="./bower_components/core-overlay/core-overlay.html">
+<link rel="import" href="./bower_components/core-list/core-list.html">
+<link rel="import" href="./bower_components/core-item/core-item.html">
+<link rel="import" href="./bower_components/paper-input/paper-input.html">
+<link rel="import" href="./bower_components/paper-button/paper-button.html">
+
+<polymer-element name="edit-items-dialog" attributes="data prop">
+    <template>
+        <style>
+         :host {
+             box-sizing: border-box;
+             -moz-box-sizing: border-box;
+             -webkit-user-select: none;
+             -moz-user-select: none;
+             overflow: hidden;
+             background: white;
+             padding: 10px 10px;
+             outline: 1px solid rgba(0,0,0,0.2);
+             box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+         }
+
+         :host(.core-transition) {
+             overflow: hidden;
+         }
+
+         #list {
+             overflow: scroll;
+             max-height: 500px;
+             width: 95%;
+         }
+
+         li > span {
+             color: #444;
+             display: flex;
+             /* justify-content: center; */ /* align horizontal */
+             align-items: center; /* align vertical */
+             margin: 0 20px 0 0;
+         }
+
+         :host paper-input::shadow paper-input-decorator {
+             padding: 5px 0;
+         }
+
+         paper-input::shadow paper-input-decorator > input[is="core-input"] {
+             margin: 0px;
+         }
+
+         paper-input::shadow paper-input-decorator /deep/ .focused-underline {
+             /* line color when the input is focused */
+             background-color: #006064;
+         }
+
+         .title {
+             color: #006064;
+         }
+        </style>
+
+        <core-overlay id="overlay" layered backdrop sizingTarget="{{$['list']}}">
+            <div class="title">{{title}}</div>
+            <div id="list">
+                <ul>
+                    <template repeat="{{name, i in data}}">
+                        <li horizontal layout>
+                            <span>{{prop!= null ? name[prop] : name}}</span>
+                            <paper-input label="{{prop!= null ? name[prop] : name}}" on-change="{{changeValue}}" position="{{i}}"></paper-input>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+
+            <!-- TODO: check why we can't use paper-button here -->
+            <button id="buttonOK" class="title" core-overlay-toggle on-click="{{close}}">OK</button>
+        </core-overlay>
+
+    </template>
+
+    <script>
+     Polymer('edit-items-dialog', {
+         data: null,
+         prop: null,
+         title: null,
+
+         ready: function() {
+             this.$.overlay.target = this;
+             console.log(this.data);
+         },
+
+         setTitle: function(title) {
+             this.title = title;
+         },
+
+         toggle: function() {
+             console.log(this.data);
+             this.$.overlay.toggle();
+         },
+
+         setData: function(data) {
+             this.data = data;
+         },
+
+         close: function(event, detail, sender) {
+
+
+             this.$.overlay.close();
+         },
+
+         changeValue: function(event, detail, sender) {
+             if (this.prop != null) {
+                 this.data[sender.attributes['position'].value][this.prop] = sender.value;
+             } else {
+                 this.data[sender.attributes['position'].value] = sender.value;
+             }
+         }
+
+     });
+    </script>
+</polymer-element>

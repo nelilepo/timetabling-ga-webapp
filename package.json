@@ -1,0 +1,14 @@
+{
+  "name": "timetabling-ga-web",
+  "version": "0.0.1",
+  "description": "web project for solving the timetabling problem with genetic algorithm",
+  "author": "Neli Lepoeva <neli.lepoeva@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "~4.11.0",
+    "socket.io": "~1.3.5",
+    "mongoose": "",
+    "net": "",
+    "body-parser": "~1.13.0"
+  }
+}

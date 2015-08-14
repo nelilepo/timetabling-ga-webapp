@@ -1,0 +1,84 @@
+<link rel="import" href="./bower_components/socket-connection/socket-connection.html">
+
+<polymer-element name="run-logs">
+    <template>
+        <style>
+         :host {
+             padding: 0 0 40 0px;
+         }
+
+         .logs {
+             overflow: auto;
+             margin: 10px 0 40 0;
+             padding: 10px;
+             height: 100%;
+             background-color: white;
+             border-style: solid;
+             border-width: 1px;
+             border-color: #EEEEEE;
+         }
+
+         #main {
+             height: 100%;
+             margin: 40px 40 40 40;
+             padding: 0 0 40 0px;
+         }
+
+         core-list {
+             padding: 5 10 10 10px;
+         }
+
+         .menu-title {
+             color: #006064;
+         }
+
+         core-list > * {
+             color: #444;
+         }
+
+         #footer {
+             height: 40px;
+         }
+        </style>
+
+        <div id="main" vertical layout>
+            <div class="menu-title">Run Logs</div>
+
+            <socket-connection  url="http://localhost:3210/logEntry">
+                <socket-receiver id="rcv" event="logEntry" data="{{data}}">
+
+                </socket-receiver>
+            </socket-connection>
+
+            <socket-connection url="http://localhost:3210">
+                <socket-receiver id="disc" event="disconnect" data="{{smth}}">
+                </socket-receiver>
+            </socket-connection>
+
+            <div class="logs" id="logs" flex>
+                <core-list data="{{data}}" scrollTarget={{$['logs']}}>
+                    <template>
+                        <p>processorID: {{model.procID}} threadID: {{model.threadID}} bestSolution: {{model.best}} time: {{model.time}}</p>
+                    </template>
+                </core-list>
+            </div>
+
+            <div id="footer"></div>
+        </div>
+
+
+
+    </template>
+
+    <script>
+     Polymer('run-logs', {
+
+         data: [],
+         running: false,
+
+         setData: function(data) {
+             this.data = data;
+         }
+     });
+    </script>
+</polymer-element>

@@ -1,0 +1,429 @@
+<link rel="import" href="./bower_components/paper-button/paper-button.html">
+<link rel="import" href="./bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="./bower_components/core-icons/core-icons.html">
+<link rel="import" href="./bower_components/core-icons/av-icons.html">
+<link rel="import" href="./bower_components/core-icon-button/core-icon-button.html">
+<link rel="import" href="./bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="./bower_components/paper-shadow/paper-shadow.html">
+<link rel="import" href="./bower_components/core-list/core-list.html">
+<link rel="import" href="./bower_components/core-menu/core-menu.html">
+<link rel="import" href="./bower_components/core-item/core-item.html">
+<link rel="import" href="./bower_components/paper-dropdown/paper-dropdown.html">
+<link rel="import" href="./bower_components/paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="./bower_components/core-label/core-label.html">
+<link rel="import" href="./bower_components/paper-checkbox/paper-checkbox.html">
+<link rel="import" href="./bower_components/core-ajax/core-xhr.html">
+<link rel="import" href="./bower_components/socket-connection/socket-connection.html">
+
+<polymer-element name="input-options" attributes="currentSelected selectedTab data">
+    <template>
+        <style>
+
+         paper-dropdown-menu {
+             margin: 0px 0 0 0;
+         }
+
+         paper-dropdown-menu {
+             padding: 0px;
+         }
+
+         paper-dropdown-menu::shadow #label {
+             white-space: normal;
+         }
+
+         paper-dropdown-menu::shadow #label:not(.selectedItem), #arrow {
+             color: #F50057;
+         }
+
+         paper-dropdown-menu::shadow #label.selectedItem, #arrow {
+             color: #444;
+         }
+
+         paper-checkbox::shadow #ink[checked] {
+             color: #006064;
+         }
+
+         paper-checkbox::shadow #checkbox.checked {
+             background-color: #006064;
+             border-color: #006064;
+         }
+
+         paper-checkbox::shadow #ink {
+             color: #F50057;
+         }
+
+         paper-checkbox::shadow #checkbox {
+             border-color: #F50057;
+         }
+
+         paper-item::shadow .button-content {
+             padding: 5px;
+             color: #444;
+         }
+
+         .menu-item {
+             margin: 10px;
+         }
+
+         .menu-subItem {
+             margin: 0px 0 0 20;
+         }
+
+         .menu-text {
+             color: #444;
+             margin: 15px 0 15 0;
+         }
+
+         .checkbox-item {
+             margin: 10px 20 10 0;
+         }
+
+         .checkbox-label {
+             color: #444;
+             padding: 3px 0 3 0;
+             margin: 0px 10 0 10;
+         }
+
+         paper-checkbox {
+             padding: 3px;
+         }
+
+         core-item {
+             color: #444;
+             min-height: 32px;
+         }
+
+         .subItem-label {
+             color: #444;
+             padding: 3px 0 3 0;
+             margin: 0px 10 0 0;
+         }
+
+         paper-button {
+             color: #F50057;
+             text-transform: none;
+             margin: 0px 0 0 20;
+         }
+
+         #transition-button {
+             transition: all 300ms ease-in-out;
+         }
+
+         #transition-button core-icon {
+             height: 20px;
+             width: 20px;
+         }
+
+         paper-toggle-button {
+             margin: 10px 0 10 20;
+         }
+
+         paper-toggle-button::shadow .toggle {
+             background-color: #F50057;
+         }
+
+         paper-toggle-button::shadow .toggle-ink {
+             color: #F50057;
+         }
+
+         paper-toggle-button::shadow [checked] .toggle {
+             background-color: #006064;
+         }
+
+         paper-toggle-button::shadow [checked] .toggle-ink {
+             color: #006064;
+         }
+
+         #main {
+             margin: 0px 40 40 40;
+             padding: 0 0 40 0px;
+         }
+
+         .menu-title {
+             font-size: 130%;
+             color: #006064;
+         }
+
+         .menu-heading {
+             color: #006064;
+             font-size: 110%;
+             margin: 10px 0 10 0;
+         }
+
+         .menu-subHeading {
+             color: #006064;
+             margin: 10px 0 10 15;
+         }
+
+         table {
+             border-collapse: collapse;
+         }
+
+         table, th, td {
+             border: 1px solid #444;
+         }
+
+         table td {
+             color: #444;
+             font-size: 90%;
+         }
+
+         core-header-panel {
+             height: 100%;
+         }
+
+         :host::shadow core-toolbar {
+             background-color: white;
+             color: #006064;
+             font-size: 100%;
+         }
+
+         .grid {
+             margin: 20px 40 10 40;
+         }
+
+         .handsontable col {
+             width: 100px;
+         }
+
+        </style>
+
+        <core-header-panel flex>
+            <core-toolbar mode="standard">
+                <socket-connection url="http://localhost:3210">
+                    <socket-emitter id="emitter" event="execute">
+                    </socket-emitter>
+                </socket-connection>
+                <paper-fab icon="av:play-arrow" style="background-color: #EC407A;" mini on-click="{{execute}}"></paper-fab>
+                <div>Run an input instance with default values or choose custom ones from the sections below.</div>
+            </core-toolbar>
+
+            <div id="main">
+                <div id="options" vertical layout>
+                    <div vertical layout class="menu-item">
+                        <div class="menu-heading">Input file</div>
+                        <div class="menu-text">The default input file is of type small (easy). See the reference table with the input size values below.</div>
+                        <div horizontal layout class="menu-subItem">
+                            <paper-dropdown-menu id="inputFile" auto-vertical label="select an input file" style="width: 20%">
+                                <core-xhr id="requestFiles"></core-xhr>
+                                <paper-dropdown id="dropDownItems" class="dropdown">
+                                    <core-menu class="menu">
+                                        <template repeat="{{file in inputFiles}}">
+                                            <paper-item>{{file}}</paper-item>
+                                        </template>
+                                    </core-menu>
+                                </paper-dropdown>
+                            </paper-dropdown-menu>
+
+                            <paper-button id="transition-button" raised hidden?="{{hideButton}}" on-click="{{switchPages}}">
+                                <core-icon icon="create"></core-icon>
+                                Edit Input
+                            </paper-button>
+                            <core-xhr id="requestInputFile"></core-xhr>
+                        </div>
+
+                        <div class="menu-text">
+                            Contains the number of events, rooms, features and students, the size of each room, the students events' attendance, the required rooms and events features. The predefined input files contain the following number of values for each parameter:
+                        </div>
+
+
+                        <div class="menu-subItem">
+                            <hot-table id="inputTable" readonly colWidths="{{columnWidths}}" datarows="{{inputTableData}}" colHeaders="{{inputTableHeaders}}" maxRows="{{inputTableData.length}}">
+                            </hot-table>
+                        </div>
+
+                    </div>
+
+                    <div id="constraints" class="menu-item">
+                        <div auto-vertical class="menu-heading">Hard and soft constraints</div>
+                        <div class="menu-subHeading">Hard constraints</div>
+                        <div class="menu-subItem">
+                            <core-item icon="chevron-right">no student attends more than one event at the same time</core-item>
+                            <core-item icon="chevron-right">the room is big enough for all the attending students and satisfies all the
+                                features required by the event</core-item>
+                            <core-item icon="chevron-right">only one event is in each room at any timeslot</core-item>
+                        </div>
+                        <div class="menu-subHeading">Soft constraints</div>
+                        <div class="menu-subItem">
+                            <core-item icon="chevron-right">a student has a class in the last slot of the day</core-item>
+                            <core-item icon="chevron-right">a student has more than two classes in a row</core-item>
+                            <core-item icon="chevron-right">a student has more than two classes in a row</core-item>
+                        </div>
+                    </div>
+
+                    <div id="LS_options" vertical layout class="menu-item">
+                        <div class="menu-heading">Local search neighbourhood move types</div>
+                        <div class="menu-subItem">
+                            <div auto-vertical class="checkbox-item">
+                                <core-label horizontal layout>
+                                    <paper-checkbox id="chckBx_p1" checked disabled></paper-checkbox>
+                                    <div class="checkbox-label">p1 - move an event in the next timeslot (default)</div>
+                                </core-label>
+                            </div>
+
+                            <div auto-vertical>
+                                <core-label horizontal layout class="checkbox-item">
+                                    <paper-checkbox id="chckBx_p2"></paper-checkbox>
+                                    <div class="checkbox-label">p2 - swap an event with the next one</div>
+                                </core-label>
+                            </div>
+
+                            <div auto-vertical>
+                                <core-label horizontal layout class="checkbox-item">
+                                    <paper-checkbox id="chckBx_p3"></paper-checkbox>
+                                    <div class="checkbox-label">p3 - swap three consequent events</div>
+                                </core-label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div auto-vertical class="menu-item">
+                        <div horizontal layout>
+                            <div class="menu-heading">Parallel execution</div>
+                            <paper-toggle-button id="parallelOptions"></paper-toggle-button>
+                        </div>
+
+                        <div class="menu-subItem" hidden?="{{hideParallelOptions}}" horizontal layout>
+                            <div horizontal layout class="checkbox-item">
+                                <div class="subItem-label">Number of processors</div>
+                                <paper-dropdown-menu id="procsNum" auto-vertical label="processors">
+                                    <paper-dropdown id="dropDownItems" class="dropdown">
+                                        <core-menu class="menu">
+                                            <template repeat="{{i in [1,2,3,4,5,6,7,8]}}">
+                                                <paper-item>{{i}}</paper-item>
+                                            </template>
+                                        </core-menu>
+                                    </paper-dropdown>
+                                </paper-dropdown-menu>
+                            </div>
+
+                            <div horizontal layout class="checkbox-item">
+                                <div class="subItem-label">Number of threads per processor</div>
+                                <paper-dropdown-menu id="threadsNum" auto-vertical label="threads">
+                                    <paper-dropdown id="dropDownItems" class="dropdown">
+                                        <core-menu class="menu">
+                                            <template repeat="{{i in [1,2]}}">
+                                                <paper-item>{{i}}</paper-item>
+                                            </template>
+                                        </core-menu>
+                                    </paper-dropdown>
+                                </paper-dropdown-menu>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </core-header-panel>
+    </template>
+
+    <script>
+
+     Polymer('input-options', {
+
+         hideButton: true,
+         hideGrid: true,
+         hideParallelOptions: true,
+         inputFiles: [],
+         inputFile: '',
+         fileChosen: false,
+         p1: 1, p2: 0, p3: 0,
+         procsNum: 0,
+         threadsNum: 0,
+         //TODO: iterations
+         inputTableHeaders: [],
+         inputTableData: [],
+         columnWidths: [],
+
+         created: function() {
+             this.inputTableHeaders = ['', 'small', 'medium', 'large'];
+             this.inputTableData = [['#events', 100, 400, 400],
+                                    ['#rooms', 5, 10, 10],
+                                    ['#features', 5, 5, 10],
+                                    ['#features per room (approx)', 3, 3, 5],
+                                    ['percentage of features used', 70, 80, 90],
+                                    ['#students', 80, 200, 400],
+                                    ['maximum #events per student', 20, 20, 20],
+                                    ['maximum #students per event', 20, 50, 100]];
+             this.columnWidths = [230, 70, 70, 70];
+         },
+
+         ready: function() {
+             var that = this;
+             this.$.requestFiles.request({url: '/api/files', method: 'GET', callback: function(response, err) {
+                 that.inputFiles = JSON.parse(response);
+                 console.log(that.inputFiles);
+             }});
+
+             this.$.inputFile.addEventListener('core-select', function(event) {
+                 that.inputFile = event.detail.item.innerText;
+                 console.log(that.inputFile);
+
+
+                 that.toggleButton();
+                 that.fileChosen = true;
+             });
+
+             this.$.parallelOptions.addEventListener('change', function(event) {
+                 that.toggleParallelOptions();
+             });
+
+             this.$.dropDownItems.addEventListener('core-overlay-open', function() {
+                 if (that.inputFiles.isEmpty) {
+                     this.$.requestFiles.request({url: '/api/files', method: 'GET', callback: function(response, err) {
+                         that.inputFiles = JSON.parse(response);
+                         console.log(that.inputFiles);
+                     }});
+                 }
+             });
+
+             this.$.procsNum.addEventListener('core-select', function(event) {
+                 that.procsNum = event.detail.item.innerText;
+             });
+             this.$.threadsNum.addEventListener('core-select', function(event) {
+                 that.threadsNum = event.detail.item.innerText;
+             });
+
+             this.$.chckBx_p2.addEventListener('change', function(event) {
+                 that.p2 = that.$.chckBx_p2.checked;
+             });
+             this.$.chckBx_p3.addEventListener('change', function(event) {
+                 that.p3 = that.$.chckBx_p3.checked;
+             });
+         },
+
+         switchPages: function() {
+             console.log("Switched from Inut Options");
+             this.currentSelected = this.currentSelected === 0 ? 1 : 0;
+             console.log(this.currentSelected);
+
+             if (this.fileChosen) {
+                 this.fire('input-file-data');
+                 this.fileChosen = false;
+             }
+         },
+
+         toggleButton: function() {
+             this.hideButton = false;
+         },
+
+         toggleParallelOptions: function() {
+             this.hideParallelOptions = !this.hideParallelOptions;
+         },
+
+         compareGrids: function() {
+             this.$.requestFiles.request({url: '/api/file', method: 'POST', headers: {"Content-Type": "application/json", "Accept": "application/json"}, body: JSON.stringify(this.data), callback: function(response, err) {
+             }});
+         },
+
+         execute: function(e) {
+             this.$.emitter.emit();
+             this.selectedTab = 1;
+         }
+     });
+
+    </script>
+</polymer-element>
